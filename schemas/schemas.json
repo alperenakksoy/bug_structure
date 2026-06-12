@@ -1,0 +1,19 @@
+{
+  "bug_schema": {
+    "fields": {
+      "schema_type": "string (backend, frontend, database, performance, other)",
+      "component": "string (which part of the software)",
+      "trigger_action": "string (what caused the bug)",
+      "error_signature": "string (exact error message or symptom)",
+      "severity": "string (low, medium, high, critical)"
+    }
+  },
+  "severity_mapping": {
+    "trivial": "low",
+    "minor": "low",
+    "normal": "medium",
+    "major": "high",
+    "critical": "critical",
+    "blocker": "critical"
+  }
+}
