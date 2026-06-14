@@ -2,15 +2,12 @@ import os
 import json
 import time
 import pandas as pd
-from openai import OpenAI
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 DATA_PATH = "/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla_clean.csv"
 
@@ -24,12 +21,12 @@ SEVERITY_MAPPING = {
 }
 
 MODELS = {
-    "llama": "meta-llama/llama-3.1-8b-instruct",
-    "gemma": "google/gemma-4-31b-it:free"
+    "llama": "llama-3.1-8b-instant",
+    "gemma": "llama-3.3-70b-versatile"
 }
 
 def extract_bug_info(report: str, model: str = "llama", prompt_type: str = "zero_shot") -> dict:
-    time.sleep(2)
+    time.sleep(1)
 
     if prompt_type == "zero_shot":
         user_content = f"""Extract structured information from this bug report.
@@ -43,7 +40,7 @@ Return ONLY a JSON object with these fields:
 - error_signature
 - severity (low, medium, high, critical)
 """
-    else:  # few_shot
+    else:
         user_content = f"""Extract structured information from bug reports. Here are examples:
 
 Example 1:
@@ -130,5 +127,13 @@ def run_pipeline(n_samples: int = 30, model: str = "llama", prompt_type: str = "
 
     return results
 
+
 if __name__ == "__main__":
+    # Experiment A: Llama zero-shot
+    run_pipeline(n_samples=30, model="llama", prompt_type="zero_shot")
+    # Experiment B: Gemma zero-shot
+    run_pipeline(n_samples=30, model="gemma", prompt_type="zero_shot")
+    # Experiment C: Llama few-shot
+    run_pipeline(n_samples=30, model="llama", prompt_type="few_shot")
+    # Experiment D: Gemma few-shot
     run_pipeline(n_samples=30, model="gemma", prompt_type="few_shot")
