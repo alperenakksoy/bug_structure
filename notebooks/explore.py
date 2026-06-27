@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
+df = pd.read_csv("data/bugzilla.csv")
 
 # Severity dağılımı
 print("=== SEVERITY LABELS ===")
@@ -28,6 +28,6 @@ for _, row in df.sample(5, random_state=42).iterrows():
 
 import pandas as pd
 
-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
+df = pd.read_csv("data/bugzilla.csv")
 
 print(repr(df.columns.tolist()))

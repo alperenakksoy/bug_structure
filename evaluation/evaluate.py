@@ -8,9 +8,13 @@ RESULT_FILES = {
     "llama_8b_few":    "evaluation/results_llama_8b_few_shot.json",
     "llama_70b_zero":  "evaluation/results_llama_70b_zero_shot.json",
     "llama_70b_few":   "evaluation/results_llama_70b_few_shot.json",
-    "qwen_zero_shot": "evaluation/results_qwen_32b_zero_shot.json",
-    "qwen_few_shot": "evaluation/results_qwen_32b_few_shot.json",
+    "qwen_zero":       "evaluation/results_qwen_32b_zero_shot.json",
+    "qwen_few":        "evaluation/results_qwen_32b_few_shot.json",
 }
+
+VALID_SCHEMA_TYPES = {"backend", "frontend", "database", "performance", "other"}
+VALID_SEVERITIES   = {"low", "medium", "high", "critical"}
+HALLUCINATION_TOKENS = {"unknown", "n/a", "none", "not specified", "not provided", "na", ""}
 
 CLASSES = ["low", "medium", "high", "critical"]
 
@@ -51,6 +55,42 @@ def json_validity_rate(results):
 def hallucination_rate(results):
     hallucinated = sum(1 for r in results if r.get("hallucinated", False))
     return hallucinated / len(results) if results else 0.0
+
+
+# ── Field extraction accuracy ─────────────────────────────────────────────────
+
+def _field_is_valid(value) -> bool:
+    return bool(value) and str(value).strip().lower() not in HALLUCINATION_TOKENS
+
+
+def field_completeness_rate(results):
+    """Fraction of records where ALL five extraction fields are non-empty and non-trivial."""
+    fields = ["schema_type", "component", "trigger_action", "error_signature", "severity"]
+    complete = sum(
+        1 for r in results
+        if r.get("json_valid", False) and all(_field_is_valid(r.get(f, "")) for f in fields)
+    )
+    return complete / len(results) if results else 0.0
+
+
+def schema_type_accuracy(results):
+    """Fraction of valid-JSON records where schema_type is one of the five defined types."""
+    valid_json = [r for r in results if r.get("json_valid", False)]
+    if not valid_json:
+        return 0.0
+    correct = sum(1 for r in valid_json if r.get("schema_type", "") in VALID_SCHEMA_TYPES)
+    return correct / len(valid_json)
+
+
+def field_extraction_summary(results) -> Dict:
+    """Per-field non-hallucination rate across all json-valid records."""
+    fields = ["schema_type", "component", "trigger_action", "error_signature", "severity"]
+    valid = [r for r in results if r.get("json_valid", False)]
+    n = len(valid) or 1
+    return {
+        f: round(sum(1 for r in valid if _field_is_valid(r.get(f, ""))) / n, 4)
+        for f in fields
+    }
 
 
 def accuracy(results):
@@ -115,12 +155,22 @@ def evaluate_experiment(name: str, results: List[Dict]):
     print(f"\n{'═'*60}")
     print(f"  {name}")
     print(f"{'═'*60}")
-    print(f"  Samples       : {len(results)}")
-    print(f"  Accuracy      : {accuracy(results)*100:.1f}%")
-    print(f"  Macro F1      : {macro_f1(results)*100:.1f}%")
-    print(f"  Weighted F1   : {weighted_f1(results)*100:.1f}%")
-    print(f"  JSON Valid    : {json_validity_rate(results)*100:.1f}%")
-    print(f"  Hallucination : {hallucination_rate(results)*100:.1f}%")
+    print(f"  Samples            : {len(results)}")
+    print(f"  JSON Valid         : {json_validity_rate(results)*100:.1f}%")
+    print(f"")
+    print(f"  — Severity classification —")
+    print(f"  Accuracy           : {accuracy(results)*100:.1f}%")
+    print(f"  Macro F1           : {macro_f1(results)*100:.1f}%")
+    print(f"  Weighted F1        : {weighted_f1(results)*100:.1f}%")
+    print(f"")
+    print(f"  — Field extraction quality —")
+    print(f"  Field completeness : {field_completeness_rate(results)*100:.1f}%")
+    print(f"  Schema type valid  : {schema_type_accuracy(results)*100:.1f}%")
+    print(f"  Hallucination rate : {hallucination_rate(results)*100:.1f}%")
+    fe = field_extraction_summary(results)
+    print(f"  Per-field fill rate (non-null, non-trivial):")
+    for field, rate in fe.items():
+        print(f"    {field:<20} {rate*100:.1f}%")
 
     print(f"\n  Per-class metrics:")
     print(f"  {'Class':<12} {'Precision':>10} {'Recall':>10} {'F1':>10} {'Support':>10}")
@@ -136,13 +186,16 @@ def evaluate_experiment(name: str, results: List[Dict]):
     error_analysis(results)
 
     return {
-        "name":             name,
-        "n":                len(results),
-        "accuracy":         round(accuracy(results), 4),
-        "macro_f1":         round(macro_f1(results), 4),
-        "weighted_f1":      round(weighted_f1(results), 4),
-        "json_valid_rate":  round(json_validity_rate(results), 4),
-        "hallucination_rate": round(hallucination_rate(results), 4),
+        "name":                    name,
+        "n":                       len(results),
+        "accuracy":                round(accuracy(results), 4),
+        "macro_f1":                round(macro_f1(results), 4),
+        "weighted_f1":             round(weighted_f1(results), 4),
+        "json_valid_rate":         round(json_validity_rate(results), 4),
+        "hallucination_rate":      round(hallucination_rate(results), 4),
+        "field_completeness_rate": round(field_completeness_rate(results), 4),
+        "schema_type_accuracy":    round(schema_type_accuracy(results), 4),
+        "field_extraction":        field_extraction_summary(results),
         "per_class": {
             c: {
                 "precision": round(precision_recall_f1(results, c)[0], 4),
@@ -168,11 +221,11 @@ def run_full_evaluation():
         all_summaries.append(summary)
 
     # ── Comparative summary table ─────────────────────────────────────────────
-    print(f"\n\n{'═'*75}")
+    print(f"\n\n{'═'*90}")
     print("  COMPARATIVE SUMMARY")
-    print(f"{'═'*75}")
-    print(f"  {'Experiment':<22} {'Acc':>7} {'MacroF1':>9} {'WtF1':>7} {'JSON%':>7} {'Hall%':>7}")
-    print(f"  {'-'*65}")
+    print(f"{'═'*90}")
+    print(f"  {'Experiment':<22} {'Acc':>7} {'MacroF1':>9} {'WtF1':>7} {'JSON%':>7} {'FieldCmp':>9} {'Hall%':>7}")
+    print(f"  {'-'*76}")
     for s in all_summaries:
         print(
             f"  {s['name']:<22}"
@@ -180,6 +233,7 @@ def run_full_evaluation():
             f"  {s['macro_f1']*100:>7.1f}%"
             f"  {s['weighted_f1']*100:>5.1f}%"
             f"  {s['json_valid_rate']*100:>5.1f}%"
+            f"  {s['field_completeness_rate']*100:>7.1f}%"
             f"  {s['hallucination_rate']*100:>5.1f}%"
         )
 

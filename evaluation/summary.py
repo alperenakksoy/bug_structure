@@ -8,14 +8,12 @@ results = {
     "gemma_few_shot": "evaluation/results_gemma_few_shot.json",
 }
 
-BASE = "/Users/alperenaksoy/Desktop/bug-report-structurer/"
-
 print("=" * 50)
 print("EXPERIMENT RESULTS SUMMARY")
 print("=" * 50)
 
 for name, path in results.items():
-    full_path = BASE + path
+    full_path = path
     if os.path.exists(full_path):
         with open(full_path) as f:
             data = json.load(f)

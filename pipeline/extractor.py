@@ -9,7 +9,7 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-DATA_PATH = "/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla_clean.csv"
+DATA_PATH = "data/bugzilla_clean.csv"
 
 SEVERITY_MAPPING = {
     "trivial": "low",
@@ -112,7 +112,7 @@ def run_pipeline(n_samples: int = 30, model: str = "llama", prompt_type: str = "
             print(f"  ERROR: {type(e).__name__}: {e}")
             continue
 
-    output_path = f"/Users/alperenaksoy/Desktop/bug-report-structurer/evaluation/results_{model}_{prompt_type}.json"
+    output_path = f"evaluation/results_{model}_{prompt_type}.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
 

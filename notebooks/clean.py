@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
+df = pd.read_csv("data/bugzilla.csv")
 df.columns = df.columns.str.strip()
 
 # 1. Çok kısa açıklamaları sil
@@ -15,7 +15,7 @@ for label in df["Severity Label"].unique():
 balanced = pd.concat(sample_list).reset_index(drop=True)
 
 # 3. Kaydet
-balanced.to_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla_clean.csv", index=False)
+balanced.to_csv("data/bugzilla_clean.csv", index=False)
 
 print("Orijinal:", df.shape)
 print("Temizlenmiş:", balanced.shape)
