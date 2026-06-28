@@ -1,0 +1,266 @@
+[
+  {
+    "name": "llama_8b_zero",
+    "n": 150,
+    "accuracy": 0.2867,
+    "macro_f1": 0.2938,
+    "weighted_f1": 0.3207,
+    "json_valid_rate": 1.0,
+    "hallucination_rate": 0.04,
+    "field_completeness_rate": 0.96,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 1.0,
+      "trigger_action": 0.9933,
+      "error_signature": 0.9867,
+      "severity": 0.9667
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.6,
+        "recall": 0.24,
+        "f1": 0.3429,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.1642,
+        "recall": 0.44,
+        "f1": 0.2391,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.1538,
+        "recall": 0.24,
+        "f1": 0.1875,
+        "support": 25
+      },
+      "critical": {
+        "precision": 0.7368,
+        "recall": 0.28,
+        "f1": 0.4058,
+        "support": 50
+      }
+    }
+  },
+  {
+    "name": "llama_8b_few",
+    "n": 150,
+    "accuracy": 0.3933,
+    "macro_f1": 0.3307,
+    "weighted_f1": 0.3974,
+    "json_valid_rate": 1.0,
+    "hallucination_rate": 0.1267,
+    "field_completeness_rate": 0.8733,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 0.9867,
+      "trigger_action": 0.9533,
+      "error_signature": 0.9867,
+      "severity": 0.9
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.5,
+        "recall": 0.64,
+        "f1": 0.5614,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.1538,
+        "recall": 0.24,
+        "f1": 0.1875,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.5,
+        "recall": 0.04,
+        "f1": 0.0741,
+        "support": 25
+      },
+      "critical": {
+        "precision": 0.6667,
+        "recall": 0.4,
+        "f1": 0.5,
+        "support": 50
+      }
+    }
+  },
+  {
+    "name": "llama_70b_zero",
+    "n": 150,
+    "accuracy": 0.34,
+    "macro_f1": 0.3301,
+    "weighted_f1": 0.3454,
+    "json_valid_rate": 1.0,
+    "hallucination_rate": 0.0667,
+    "field_completeness_rate": 0.9333,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 1.0,
+      "trigger_action": 0.9533,
+      "error_signature": 0.98,
+      "severity": 1.0
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.6897,
+        "recall": 0.4,
+        "f1": 0.5063,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.2254,
+        "recall": 0.64,
+        "f1": 0.3333,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.186,
+        "recall": 0.32,
+        "f1": 0.2353,
+        "support": 25
+      },
+      "critical": {
+        "precision": 1.0,
+        "recall": 0.14,
+        "f1": 0.2456,
+        "support": 50
+      }
+    }
+  },
+  {
+    "name": "llama_70b_few",
+    "n": 150,
+    "accuracy": 0.4333,
+    "macro_f1": 0.3873,
+    "weighted_f1": 0.4423,
+    "json_valid_rate": 1.0,
+    "hallucination_rate": 0.0067,
+    "field_completeness_rate": 0.9933,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 1.0,
+      "trigger_action": 0.9933,
+      "error_signature": 1.0,
+      "severity": 1.0
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.6346,
+        "recall": 0.66,
+        "f1": 0.6471,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.2097,
+        "recall": 0.52,
+        "f1": 0.2989,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.1875,
+        "recall": 0.12,
+        "f1": 0.1463,
+        "support": 25
+      },
+      "critical": {
+        "precision": 0.8,
+        "recall": 0.32,
+        "f1": 0.4571,
+        "support": 50
+      }
+    }
+  },
+  {
+    "name": "qwen_zero",
+    "n": 150,
+    "accuracy": 0.4067,
+    "macro_f1": 0.3899,
+    "weighted_f1": 0.4384,
+    "json_valid_rate": 1.0,
+    "hallucination_rate": 0.0,
+    "field_completeness_rate": 0.2333,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 1.0,
+      "trigger_action": 1.0,
+      "error_signature": 0.2333,
+      "severity": 1.0
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.7,
+        "recall": 0.42,
+        "f1": 0.525,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.1948,
+        "recall": 0.6,
+        "f1": 0.2941,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.25,
+        "recall": 0.16,
+        "f1": 0.1951,
+        "support": 25
+      },
+      "critical": {
+        "precision": 0.7778,
+        "recall": 0.42,
+        "f1": 0.5455,
+        "support": 50
+      }
+    }
+  },
+  {
+    "name": "qwen_few",
+    "n": 150,
+    "accuracy": 0.3933,
+    "macro_f1": 0.3602,
+    "weighted_f1": 0.4014,
+    "json_valid_rate": 0.9667,
+    "hallucination_rate": 0.0133,
+    "field_completeness_rate": 0.96,
+    "schema_type_accuracy": 1.0,
+    "field_extraction": {
+      "schema_type": 1.0,
+      "component": 1.0,
+      "trigger_action": 0.9931,
+      "error_signature": 1.0,
+      "severity": 1.0
+    },
+    "per_class": {
+      "low": {
+        "precision": 0.7333,
+        "recall": 0.22,
+        "f1": 0.3385,
+        "support": 50
+      },
+      "medium": {
+        "precision": 0.2152,
+        "recall": 0.68,
+        "f1": 0.3269,
+        "support": 25
+      },
+      "high": {
+        "precision": 0.1875,
+        "recall": 0.12,
+        "f1": 0.1463,
+        "support": 25
+      },
+      "critical": {
+        "precision": 0.7179,
+        "recall": 0.56,
+        "f1": 0.6292,
+        "support": 50
+      }
+    }
+  }
+]
