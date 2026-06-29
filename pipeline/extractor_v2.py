@@ -1,21 +1,3 @@
-"""
-Bug report structured information extractor.
-
-Supports three models via Groq API:
-  llama_8b  → llama-3.1-8b-instant
-  llama_70b → llama-3.3-70b-versatile
-  qwen      → qwen-qwq-32b
-
-Two prompt strategies:
-  zero_shot — direct extraction with schema description only
-  few_shot  — three labeled examples prepended before the target report
-
-Output per record includes all extracted fields plus:
-  json_valid       (bool) — whether the model returned parseable JSON
-  hallucinated     (bool) — whether any field value is implausibly generic
-  correct_severity (bool) — predicted severity == true severity
-"""
-
 import os
 import json
 import time
@@ -38,7 +20,7 @@ SEVERITY_MAPPING = {
     "critical": "critical",
     "blocker":  "critical",
 }
-
+# create a subset 100-150 and compare with
 VALID_SCHEMA_TYPES = {"backend", "frontend", "database", "performance", "other"}
 VALID_SEVERITIES   = {"low", "medium", "high", "critical"}
 
@@ -57,7 +39,7 @@ SYSTEM_PROMPT = (
 
 FIELD_DESCRIPTION = """\
 Return ONLY a JSON object with exactly these fields:
-  schema_type     — one of: backend, frontend, database, performance, other
+schema_type     — one of: backend, frontend, database, performance, other
   component       — the software component or file affected (string)
   trigger_action  — what action or event caused the bug (string)
   error_signature — the exact error message or observable symptom (string)
