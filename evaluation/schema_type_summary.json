@@ -1,0 +1,158 @@
+[
+  {
+    "name": "llama_8b_zero_shot",
+    "n": 150,
+    "accuracy": 0.62,
+    "macro_f1": 0.3369,
+    "weighted_f1": 0.6283,
+    "per_class": {
+      "backend": {
+        "precision": 0.4691,
+        "recall": 0.7755,
+        "f1": 0.5846,
+        "support": 49
+      },
+      "frontend": {
+        "precision": 0.9245,
+        "recall": 0.6806,
+        "f1": 0.784,
+        "support": 72
+      },
+      "database": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "performance": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "other": {
+        "precision": 0.6667,
+        "recall": 0.2069,
+        "f1": 0.3158,
+        "support": 29
+      }
+    }
+  },
+  {
+    "name": "llama_8b_few_shot",
+    "n": 150,
+    "accuracy": 0.76,
+    "macro_f1": 0.4442,
+    "weighted_f1": 0.7692,
+    "per_class": {
+      "backend": {
+        "precision": 0.6552,
+        "recall": 0.7755,
+        "f1": 0.7103,
+        "support": 49
+      },
+      "frontend": {
+        "precision": 0.9492,
+        "recall": 0.7778,
+        "f1": 0.855,
+        "support": 72
+      },
+      "database": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "performance": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "other": {
+        "precision": 0.625,
+        "recall": 0.6897,
+        "f1": 0.6557,
+        "support": 29
+      }
+    }
+  },
+  {
+    "name": "llama_70b_zero_shot",
+    "n": 150,
+    "accuracy": 0.8,
+    "macro_f1": 0.4449,
+    "weighted_f1": 0.7907,
+    "per_class": {
+      "backend": {
+        "precision": 0.7037,
+        "recall": 0.7755,
+        "f1": 0.7379,
+        "support": 49
+      },
+      "frontend": {
+        "precision": 0.8642,
+        "recall": 0.9722,
+        "f1": 0.915,
+        "support": 72
+      },
+      "database": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "performance": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "other": {
+        "precision": 0.9231,
+        "recall": 0.4138,
+        "f1": 0.5714,
+        "support": 29
+      }
+    }
+  },
+  {
+    "name": "llama_70b_few_shot",
+    "n": 150,
+    "accuracy": 0.6733,
+    "macro_f1": 0.3884,
+    "weighted_f1": 0.6858,
+    "per_class": {
+      "backend": {
+        "precision": 0.6923,
+        "recall": 0.3673,
+        "f1": 0.48,
+        "support": 49
+      },
+      "frontend": {
+        "precision": 0.8312,
+        "recall": 0.8889,
+        "f1": 0.8591,
+        "support": 72
+      },
+      "database": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "performance": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "other": {
+        "precision": 0.5588,
+        "recall": 0.6552,
+        "f1": 0.6032,
+        "support": 29
+      }
+    }
+  }
+]

@@ -1,0 +1,151 @@
+bug_id,description,my_review
+127246,NPE in ViewContextService.perspectiveChanged,backend
+135559,Problem view sections collapse after manual build,frontend
+136088,Source Editor: Unwanted static imports added when using calling super,frontend
+138389,Unable to start workbench,frontend
+138975,ConcurrentModificationException in Saveables framework when closing part,backend
+139101,Factory Path dialog buttons enabled when shouldn't be,frontend
+142529,eclipse doesn't run,other
+142744,NPE in DecoratedField.updateControlAttachments(...),frontend
+145389,CDT parser has problems with assembly code,backend
+145558,update plugins to use version  3.1.100.qualifier,other
+150155,Clicking in textfield sets cursor to one before last char,frontend
+153116,[rulers] Contributing a ruler to a class should always use inheritance,backend
+153765,Rename package is not reflected in annotations,backend
+154944,Holding mouse down on Table blocks Display.asyncExec and syncExec,frontend
+173881,Error logged about missing ResourceNavigator when opening Resource Perspective,frontend
+182843,NPE when trying to see conflicting changes,backend
+183954,Failure in testBasicMenuPopulation,frontend
+197626,[clean up] Clean Up configuration dialog talks about save actions,frontend
+202456,Variable Selection Dialog needs better help,frontend
+210825,NSBox seems to be a few pixels short,frontend
+221029,The hover pop-up displays C/C++ comments for classes with wrong encoding,frontend
+235868,"TVT34:TCT751: Hardcoded ""auto"" in the list ""Specify processor architecture""",frontend
+239856,Launches corrupted in I20080702-0939,other
+243845,API Tooling tag for org.eclipse.compare.patch.PatchConfiguration,backend
+246189,Ant UI test suite is not single-file friendly,frontend
+272489,"Debug view: ""View Mode"" menu misses mnemonics",frontend
+272532,"""Use modifier 'final' where possible"" can introduce compile errors",backend
+272986,changes to ICommandLauncher,backend
+275945,[clipboard] regression: pasting text from file properties to java editor seems to be in wrong format,frontend
+277098,Breakpoint shown offset in margin,frontend
+290273,R3_5_maintenance branch in inconsistent state,other
+291788,Focus lost after F3,frontend
+293777,Misleading problem when @Override is used on mehtod with not imported paramter type,backend
+298696,Mac key bindings for refactoring are invalid,frontend
+300888,Ignored Resources' preference page needs to support multiselect,frontend
+302529,Show Eclipse IDE progress in the Eclipse icon on the Windows 7 Task Bar,frontend
+317253,[Webapp] Topics whose href includes an anchor do not show in the index when filtering is on,frontend
+323958,"""DTD verification"" is obsolete",other
+326137,Dsf attach session requires project,backend
+326594,Consider using backtrace() for Unix stack traces,backend
+328187,crash at IMAP login with GSSAPI authentication using SSPI library,backend
+328876,Avoid compiler warning in nsFrame::GetSelectionClosestFrame(),backend
+336100,Attributes to var arguments = window.arguments[0]; give void an evaluation,backend
+336162,nsListControlFrame::FireMenuItemActiveEvent called at unsafe times,backend
+339540,Remove dead find code from browser.xml and tabbrowser.xml,frontend
+346501,"Release Bugzilla 2.18.6, 2.20.3, 2.22.1, and 2.23.3",other
+348810,Crash when sorting array with only holes,backend
+348999,"deadcode in nsCSSFrameConstructor::ConstructMathMLFrame, isReplaced will not be true",backend
+354676,If I click on the page thats not text or hyperlink the page goes blank and white.,frontend
+359050,Element Propeties - Link Properties incorrectly displays open in new window/tab,frontend
+361117,"Update ""Release Info"" pages for Bugzilla 2.22.2 and 2.23.4",other
+362351,"After I changed a ""List"", the list props not changed on the screen...",frontend
+367740,Crash [@ ARGB32_image_mark],frontend
+367894,"Missing separator after the ""Sanity Check"" link in the footer",frontend
+369669,Version/config bumps for Fx 1.5.0.10,other
+371147,about: should use about:logo again,frontend
+373606,Version/config bumps for Fx 150eleven,other
+373869,In search result screen sort the bugs by any custom field displays an error screen,frontend
+380429,Default search engine not preserved when updating from 2003->2004RC2,frontend
+381108,Inconsistent use of space after colon in object literal decompilation,backend
+382823,Version/config bumps for Tb 2004,other
+385034,Autoscroll doesn't cancel properly on second middle-click,frontend
+390735,"innerHTML skips <meta http-equiv=""content-type"" charset=...>",frontend
+393293,"Update Download page for Bugzilla 3.0.1, 3.1.1, 2.22.3, and 2.20.5",other
+393517,"Crash [@ nsFrameConstructorState::ProcessFrameInsertions] with float, XUL, block-in-inline",frontend
+395053,"File , Open File insists on opening a file from the Firefox installer directory",frontend
+395272,toolkit/toolkit-makefiles.sh should include uriloader/exthandler/tests directory,other
+397222,Bogus 'for' attributes shadowing 'control' attributes on <label>s,frontend
+401298,Including jsapi.h generates many warnings with certain compiler configurations (e.g. gcc 3.4 -Wstrict-prototypes),backend
+401341,ctrl-tab sends events twice on Mac OS X 10.5,frontend
+407397,Line break remains when removing space,frontend
+415367,"ieTab extension not working due to use of "":"" in chrome URIs",frontend
+418648,configure changes required for building on windows mobile,other
+418970,DOMNodeInsertedIntoDocument mistyped as *InfoDocument,frontend
+420329,Java applets can't be seen in FireFox for Mac Leopard,frontend
+421871,Browser crashes on startup on Vista 32/64 ultimate with HTML Validator extension installed,frontend
+424976,Chrome in Compose Window Missing Post First Launch of Thunderbird,frontend
+427938,Phishing protection does not seem to be working properly in Firefox 3; this is a serious regression in effectiveness from Firefox 2,backend
+428288,[@ NS_GetInnermostURI - nsDocShell::ValidateOrigin],backend
+429624,Remove description from application accessible,frontend
+432454,Library View settings are not persistant,frontend
+434602,"After being open a few minutes, large parts of the screen don't repaint",frontend
+437276,Firefox uses wrong font for Oromo text,frontend
+444128,|MacApplicationDelegate| in toolkit throws ObjC exception when creating a |NSMenuItem| with a |nil| |NSString *|,backend
+449812,"useless ""select all"" context menu entry",frontend
+453736,"Crash under nsSVGElement::BindToTree with <svg:use>, <svg:script>",frontend
+460706,Crash [@ little2_updatePosition] with xmlhttprequest and large xml file,backend
+462076,Dynamically inserted iframes on refresh sometimes trade places,frontend
+463527,Release Notes for 2.22.6,other
+467146,font-size text attribute should be exposed in pt units,frontend
+474862,Plural rule for Icelandic,other
+476705,toplevel windows and dialogs should be maximized on windows mobile,frontend
+506499,Release Bugzilla 3.4,other
+515221,Software Keyboard is not reset when we are deactivated,frontend
+519974,"When we use IME, ASSERTION is printed at each key input (ASSERTION: nsEditor doesn't support wide caret: 'selectionStart == selectionEnd', editor/libeditor/base/IMETextTxn.cpp line 322",frontend
+521154,xpcshell-tests: test_streamupdater hangs with 'strict' & 'werror' on,other
+523755,"In nsCSSDeclaration, check unit against eCSSUnit_None, instead of checking value against nsCSSValue(eCSSUnit_None)",backend
+526596,CSS outline is not coalesced in dynamic case,frontend
+528829,"If mouse button is held down during page transition, Firefox stops responding to mouse clicks",frontend
+549260,[@ nsTextInputListener::EditAction] mFrame went away,frontend
+550207,JM: Extend JMFLAGS to allow the VMFrame contents to be dumped.,backend
+554523,Release Bugzilla 3.6,other
+555686,scope is never used in JS_NextProperty,backend
+557060,"[Debug Windows SeaMonkey 2.1] Startup fails with Windows error dialog ""?_Throw@std@@YAXABVexception@stdext@@@Z entry point not found in MSVCP80D.dll""",other
+559988,Release Bugzilla 3.4.7,other
+563114,Remove nsINonBlockingAlertService,backend
+563125,"""Assertion failure: m != TT_INT32 || isInt32(*vp)"" with array.length",backend
+563151,"[Debug Windows SeaMonkey] ""nsinstall.exe: Bad file number"" regression",other
+566639,"Recursion limit differs between TM and interpreter, take 3",backend
+567511,Setting document.domain breaks canvas getImageData functionality,frontend
+573340,Remove unused declaration of nsGenericHTMLElement::Shutdown,backend
+578729,Cutoff min/max/close buttons without navigation bar,frontend
+580618,GC removes HeadsUpDisplay after reloading the page,frontend
+581327,"Lists of bugs (aka tags) are broken, because bug IDs are no longer split on commas",backend
+588607,Implement custom dlopen to load libraries from apk,other
+593918,JM: Some ICs don't use the right sync label,backend
+604734,Crash in [@ nsPresContext::IsRootContentDocument ],frontend
+613176,app menu panes lack a separator when using a non-'windows-default-theme' theme,frontend
+623922,"in ""Set as background image"" dialog, the combox box with Stretch/Tile/Center options is cropped",frontend
+633164,Zoomed ogg video renders at the wrong size until I move the mouse,frontend
+655517,Remove nsIDOMDocumentEvent,backend
+656183,getContext() calls SetCanvasElement twice,frontend
+659816,Quicksearch only works for ASCII strings (when quoted),backend
+660451,"Crash [@ nsIFrame::GetParent() | nsCSSFrameConstructor::MaybeRecreateContainerForFrameRemoval(nsIFrame *,unsigned int *) ] during restyle",frontend
+665360,"Crash [@ gfxMixedFontFamily::ReplaceFontEntry(gfxFontEntry*, gfxFontEntry*) ]",frontend
+671423,"""non-relocatable subtraction expression"" trying to compile content/canvas/src/CanvasUtils.cpp",other
+675754,Release notes for Bugzilla 4.0.2,other
+678161,msvc*.dll missing when building with VC10,other
+682717,Assignment to a DebugOnly variable is automatically elided in non-debug builds.,backend
+697756,Video capture feature of Android depends on raw video feature,other
+698150,"TI: Assertion failure: type->canProvideEmptyShape(clasp), at ../jsobjinlines.h:1538",backend
+709519,Remove unused 1-argument nsRenderingContext::DrawEllipse,backend
+714391,Text on disabled toolbar buttons in the menubar doesn't look disabled,frontend
+717762,Make js_memcpy for bounds checking,backend
+724781,Java related crash with deleted this | [@ nsPluginInstanceOwner::Destroy() ]  [@ nsObjectFrame::SetInstanceOwner(nsPluginInstanceOwner*) ],backend
+729797,"IonMonkey: Assertion failure: cx->enumerators == obj, at jsiter.cpp:945",backend
+735045,"JS OOM Testing: Assertion failure: !var.lifetime && var.saved, at js/src/jsanalyze.cpp:933",backend
+738102,devicemotion causes shutdown crash,frontend
+746370,"IonMonkey: Assertion failure: JSOp(*(script->code + tn->start + tn->length)) == JSOP_ENDITER, at js/src/ion/IonFrames.cpp:313",backend
+758884,"[AccessFu] Regression: virtual cursor gets stuck, renders Talkback almost unusable",frontend
+763866,JavaScript strict warning: reference to undefined property this._displayedLog,backend
+765315,It is not possible to call Bugzilla::Component->new with 'name' & 'product' params,backend
+772782,crash in DocAccessible::Shutdown @ NotificationController::Shutdown,frontend
+783723,"Intermittent test_bug751809.html | Waited too long for plugin to activate, | plugin should be activated now, and 34 more bits of fallout",other
+784381,Build bustage for comm-central - SHA1.h - Cannot open include file: 'stdint.h',other
+792510,Crash with Illegal instruction (SIGILL) with gczeal(4),backend
+807109,Turn off SO_LINGER for usrsctp DataChannel sockets,backend
+811336,Only pass --nsscmd to MOZ_SIGN_CMD when signing Windows builds,other
+811612,Crash [@ strlen] or [@ js_ExpandErrorArguments],backend
+822313,Leaks on aurora,backend

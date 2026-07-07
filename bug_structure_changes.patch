@@ -1,0 +1,514 @@
+From 90657438668de44a094b118c9226277e88c5a19f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 27 Jun 2026 09:03:13 +0000
+Subject: [PATCH] Add extractor_v2, field extraction metrics, and fix hardcoded
+ paths
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- pipeline/extractor_v2.py: new extractor supporting llama_8b,
+  llama_70b, and qwen_32b models via Groq; tracks json_valid and
+  hallucinated flags per record; documents both zero-shot and few-shot
+  prompts explicitly; uses stratified sampling without pandas dependency
+- evaluation/evaluate.py: add field extraction quality metrics —
+  field_completeness_rate, schema_type_accuracy, field_extraction_summary
+  (per-field fill rate); update comparative summary table to include
+  FieldCmp column; add VALID_SCHEMA_TYPES / HALLUCINATION_TOKENS constants;
+  rename qwen result file keys to qwen_zero / qwen_few for consistency
+- Remove all hardcoded /Users/alperenaksoy/Desktop/... absolute paths
+  across extractor.py, summary.py, notebooks/explore.py, notebooks/clean.py
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Hi6YpvNwq95jRsDvFe8Wgn
+---
+ evaluation/evaluate.py   |  92 ++++++++++++---
+ evaluation/summary.py    |   4 +-
+ notebooks/clean.py       |   4 +-
+ notebooks/explore.py     |   4 +-
+ pipeline/extractor.py    |   4 +-
+ pipeline/extractor_v2.py | 247 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 327 insertions(+), 28 deletions(-)
+ create mode 100644 pipeline/extractor_v2.py
+
+diff --git a/evaluation/evaluate.py b/evaluation/evaluate.py
+index 9caada0..9e3946d 100644
+--- a/evaluation/evaluate.py
++++ b/evaluation/evaluate.py
+@@ -8,10 +8,14 @@ RESULT_FILES = {
+     "llama_8b_few":    "evaluation/results_llama_8b_few_shot.json",
+     "llama_70b_zero":  "evaluation/results_llama_70b_zero_shot.json",
+     "llama_70b_few":   "evaluation/results_llama_70b_few_shot.json",
+-    "qwen_zero_shot": "evaluation/results_qwen_32b_zero_shot.json",
+-    "qwen_few_shot": "evaluation/results_qwen_32b_few_shot.json",
++    "qwen_zero":       "evaluation/results_qwen_32b_zero_shot.json",
++    "qwen_few":        "evaluation/results_qwen_32b_few_shot.json",
+ }
+ 
++VALID_SCHEMA_TYPES = {"backend", "frontend", "database", "performance", "other"}
++VALID_SEVERITIES   = {"low", "medium", "high", "critical"}
++HALLUCINATION_TOKENS = {"unknown", "n/a", "none", "not specified", "not provided", "na", ""}
++
+ CLASSES = ["low", "medium", "high", "critical"]
+ 
+ 
+@@ -53,6 +57,42 @@ def hallucination_rate(results):
+     return hallucinated / len(results) if results else 0.0
+ 
+ 
++# ── Field extraction accuracy ─────────────────────────────────────────────────
++
++def _field_is_valid(value) -> bool:
++    return bool(value) and str(value).strip().lower() not in HALLUCINATION_TOKENS
++
++
++def field_completeness_rate(results):
++    """Fraction of records where ALL five extraction fields are non-empty and non-trivial."""
++    fields = ["schema_type", "component", "trigger_action", "error_signature", "severity"]
++    complete = sum(
++        1 for r in results
++        if r.get("json_valid", False) and all(_field_is_valid(r.get(f, "")) for f in fields)
++    )
++    return complete / len(results) if results else 0.0
++
++
++def schema_type_accuracy(results):
++    """Fraction of valid-JSON records where schema_type is one of the five defined types."""
++    valid_json = [r for r in results if r.get("json_valid", False)]
++    if not valid_json:
++        return 0.0
++    correct = sum(1 for r in valid_json if r.get("schema_type", "") in VALID_SCHEMA_TYPES)
++    return correct / len(valid_json)
++
++
++def field_extraction_summary(results) -> Dict:
++    """Per-field non-hallucination rate across all json-valid records."""
++    fields = ["schema_type", "component", "trigger_action", "error_signature", "severity"]
++    valid = [r for r in results if r.get("json_valid", False)]
++    n = len(valid) or 1
++    return {
++        f: round(sum(1 for r in valid if _field_is_valid(r.get(f, ""))) / n, 4)
++        for f in fields
++    }
++
++
+ def accuracy(results):
+     correct = sum(1 for r in results if r.get("correct_severity", False))
+     return correct / len(results) if results else 0.0
+@@ -115,12 +155,22 @@ def evaluate_experiment(name: str, results: List[Dict]):
+     print(f"\n{'═'*60}")
+     print(f"  {name}")
+     print(f"{'═'*60}")
+-    print(f"  Samples       : {len(results)}")
+-    print(f"  Accuracy      : {accuracy(results)*100:.1f}%")
+-    print(f"  Macro F1      : {macro_f1(results)*100:.1f}%")
+-    print(f"  Weighted F1   : {weighted_f1(results)*100:.1f}%")
+-    print(f"  JSON Valid    : {json_validity_rate(results)*100:.1f}%")
+-    print(f"  Hallucination : {hallucination_rate(results)*100:.1f}%")
++    print(f"  Samples            : {len(results)}")
++    print(f"  JSON Valid         : {json_validity_rate(results)*100:.1f}%")
++    print(f"")
++    print(f"  — Severity classification —")
++    print(f"  Accuracy           : {accuracy(results)*100:.1f}%")
++    print(f"  Macro F1           : {macro_f1(results)*100:.1f}%")
++    print(f"  Weighted F1        : {weighted_f1(results)*100:.1f}%")
++    print(f"")
++    print(f"  — Field extraction quality —")
++    print(f"  Field completeness : {field_completeness_rate(results)*100:.1f}%")
++    print(f"  Schema type valid  : {schema_type_accuracy(results)*100:.1f}%")
++    print(f"  Hallucination rate : {hallucination_rate(results)*100:.1f}%")
++    fe = field_extraction_summary(results)
++    print(f"  Per-field fill rate (non-null, non-trivial):")
++    for field, rate in fe.items():
++        print(f"    {field:<20} {rate*100:.1f}%")
+ 
+     print(f"\n  Per-class metrics:")
+     print(f"  {'Class':<12} {'Precision':>10} {'Recall':>10} {'F1':>10} {'Support':>10}")
+@@ -136,13 +186,16 @@ def evaluate_experiment(name: str, results: List[Dict]):
+     error_analysis(results)
+ 
+     return {
+-        "name":             name,
+-        "n":                len(results),
+-        "accuracy":         round(accuracy(results), 4),
+-        "macro_f1":         round(macro_f1(results), 4),
+-        "weighted_f1":      round(weighted_f1(results), 4),
+-        "json_valid_rate":  round(json_validity_rate(results), 4),
+-        "hallucination_rate": round(hallucination_rate(results), 4),
++        "name":                    name,
++        "n":                       len(results),
++        "accuracy":                round(accuracy(results), 4),
++        "macro_f1":                round(macro_f1(results), 4),
++        "weighted_f1":             round(weighted_f1(results), 4),
++        "json_valid_rate":         round(json_validity_rate(results), 4),
++        "hallucination_rate":      round(hallucination_rate(results), 4),
++        "field_completeness_rate": round(field_completeness_rate(results), 4),
++        "schema_type_accuracy":    round(schema_type_accuracy(results), 4),
++        "field_extraction":        field_extraction_summary(results),
+         "per_class": {
+             c: {
+                 "precision": round(precision_recall_f1(results, c)[0], 4),
+@@ -168,11 +221,11 @@ def run_full_evaluation():
+         all_summaries.append(summary)
+ 
+     # ── Comparative summary table ─────────────────────────────────────────────
+-    print(f"\n\n{'═'*75}")
++    print(f"\n\n{'═'*90}")
+     print("  COMPARATIVE SUMMARY")
+-    print(f"{'═'*75}")
+-    print(f"  {'Experiment':<22} {'Acc':>7} {'MacroF1':>9} {'WtF1':>7} {'JSON%':>7} {'Hall%':>7}")
+-    print(f"  {'-'*65}")
++    print(f"{'═'*90}")
++    print(f"  {'Experiment':<22} {'Acc':>7} {'MacroF1':>9} {'WtF1':>7} {'JSON%':>7} {'FieldCmp':>9} {'Hall%':>7}")
++    print(f"  {'-'*76}")
+     for s in all_summaries:
+         print(
+             f"  {s['name']:<22}"
+@@ -180,6 +233,7 @@ def run_full_evaluation():
+             f"  {s['macro_f1']*100:>7.1f}%"
+             f"  {s['weighted_f1']*100:>5.1f}%"
+             f"  {s['json_valid_rate']*100:>5.1f}%"
++            f"  {s['field_completeness_rate']*100:>7.1f}%"
+             f"  {s['hallucination_rate']*100:>5.1f}%"
+         )
+ 
+diff --git a/evaluation/summary.py b/evaluation/summary.py
+index d601a8b..ca90752 100644
+--- a/evaluation/summary.py
++++ b/evaluation/summary.py
+@@ -8,14 +8,12 @@ results = {
+     "gemma_few_shot": "evaluation/results_gemma_few_shot.json",
+ }
+ 
+-BASE = "/Users/alperenaksoy/Desktop/bug-report-structurer/"
+-
+ print("=" * 50)
+ print("EXPERIMENT RESULTS SUMMARY")
+ print("=" * 50)
+ 
+ for name, path in results.items():
+-    full_path = BASE + path
++    full_path = path
+     if os.path.exists(full_path):
+         with open(full_path) as f:
+             data = json.load(f)
+diff --git a/notebooks/clean.py b/notebooks/clean.py
+index effd49f..280530e 100644
+--- a/notebooks/clean.py
++++ b/notebooks/clean.py
+@@ -1,6 +1,6 @@
+ import pandas as pd
+ 
+-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
++df = pd.read_csv("data/bugzilla.csv")
+ df.columns = df.columns.str.strip()
+ 
+ # 1. Çok kısa açıklamaları sil
+@@ -15,7 +15,7 @@ for label in df["Severity Label"].unique():
+ balanced = pd.concat(sample_list).reset_index(drop=True)
+ 
+ # 3. Kaydet
+-balanced.to_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla_clean.csv", index=False)
++balanced.to_csv("data/bugzilla_clean.csv", index=False)
+ 
+ print("Orijinal:", df.shape)
+ print("Temizlenmiş:", balanced.shape)
+diff --git a/notebooks/explore.py b/notebooks/explore.py
+index 127c3d5..1cf00b4 100644
+--- a/notebooks/explore.py
++++ b/notebooks/explore.py
+@@ -1,6 +1,6 @@
+ import pandas as pd
+ 
+-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
++df = pd.read_csv("data/bugzilla.csv")
+ 
+ # Severity dağılımı
+ print("=== SEVERITY LABELS ===")
+@@ -28,6 +28,6 @@ for _, row in df.sample(5, random_state=42).iterrows():
+ 
+ import pandas as pd
+ 
+-df = pd.read_csv("/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla.csv")
++df = pd.read_csv("data/bugzilla.csv")
+ 
+ print(repr(df.columns.tolist()))
+\ No newline at end of file
+diff --git a/pipeline/extractor.py b/pipeline/extractor.py
+index 891185a..a91115e 100644
+--- a/pipeline/extractor.py
++++ b/pipeline/extractor.py
+@@ -9,7 +9,7 @@ load_dotenv()
+ 
+ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+ 
+-DATA_PATH = "/Users/alperenaksoy/Desktop/bug-report-structurer/data/bugzilla_clean.csv"
++DATA_PATH = "data/bugzilla_clean.csv"
+ 
+ SEVERITY_MAPPING = {
+     "trivial": "low",
+@@ -112,7 +112,7 @@ def run_pipeline(n_samples: int = 30, model: str = "llama", prompt_type: str = "
+             print(f"  ERROR: {type(e).__name__}: {e}")
+             continue
+ 
+-    output_path = f"/Users/alperenaksoy/Desktop/bug-report-structurer/evaluation/results_{model}_{prompt_type}.json"
++    output_path = f"evaluation/results_{model}_{prompt_type}.json"
+     with open(output_path, "w") as f:
+         json.dump(results, f, indent=2)
+ 
+diff --git a/pipeline/extractor_v2.py b/pipeline/extractor_v2.py
+new file mode 100644
+index 0000000..9b87ff7
+--- /dev/null
++++ b/pipeline/extractor_v2.py
+@@ -0,0 +1,247 @@
++"""
++Bug report structured information extractor.
++
++Supports three models via Groq API:
++  llama_8b  → llama-3.1-8b-instant
++  llama_70b → llama-3.3-70b-versatile
++  qwen      → qwen-qwq-32b
++
++Two prompt strategies:
++  zero_shot — direct extraction with schema description only
++  few_shot  — three labeled examples prepended before the target report
++
++Output per record includes all extracted fields plus:
++  json_valid       (bool) — whether the model returned parseable JSON
++  hallucinated     (bool) — whether any field value is implausibly generic
++  correct_severity (bool) — predicted severity == true severity
++"""
++
++import os
++import json
++import time
++import csv
++import re
++from groq import Groq
++from dotenv import load_dotenv
++
++load_dotenv()
++
++client = Groq(api_key=os.getenv("GROQ_API_KEY"))
++
++DATA_PATH = "data/bugzilla_clean.csv"
++
++SEVERITY_MAPPING = {
++    "trivial":  "low",
++    "minor":    "low",
++    "normal":   "medium",
++    "major":    "high",
++    "critical": "critical",
++    "blocker":  "critical",
++}
++
++VALID_SCHEMA_TYPES = {"backend", "frontend", "database", "performance", "other"}
++VALID_SEVERITIES   = {"low", "medium", "high", "critical"}
++
++MODELS = {
++    "llama_8b":  "llama-3.1-8b-instant",
++    "llama_70b": "llama-3.3-70b-versatile",
++    "qwen":      "qwen-qwq-32b",
++}
++
++# ── Prompts ──────────────────────────────────────────────────────────────────
++
++SYSTEM_PROMPT = (
++    "You are a bug report analyzer. "
++    "Always respond with ONLY valid JSON — no markdown fences, no explanations."
++)
++
++FIELD_DESCRIPTION = """\
++Return ONLY a JSON object with exactly these fields:
++  schema_type     — one of: backend, frontend, database, performance, other
++  component       — the software component or file affected (string)
++  trigger_action  — what action or event caused the bug (string)
++  error_signature — the exact error message or observable symptom (string)
++  severity        — one of: low, medium, high, critical"""
++
++FEW_SHOT_EXAMPLES = """\
++Examples:
++
++Bug report: "LDAP user login failure: Can't locate object method 'realname'. Happens on token refresh."
++Output: {"schema_type": "backend", "component": "auth_service", "trigger_action": "token refresh", "error_signature": "Can't locate object method 'realname'", "severity": "critical"}
++
++Bug report: "Wrong colspan for summarize time link on show_bug.cgi when viewing on Firefox 112."
++Output: {"schema_type": "frontend", "component": "show_bug.cgi", "trigger_action": "page rendering", "error_signature": "wrong colspan", "severity": "low"}
++
++Bug report: "Database connection timeout when running complex queries on large datasets."
++Output: {"schema_type": "database", "component": "query_engine", "trigger_action": "complex query execution", "error_signature": "connection timeout", "severity": "high"}
++
++"""
++
++
++def build_user_prompt(report: str, prompt_type: str) -> str:
++    if prompt_type == "zero_shot":
++        return f"Extract structured information from this bug report.\n\nBug report: {report}\n\n{FIELD_DESCRIPTION}"
++    else:
++        return (
++            f"Extract structured information from bug reports.\n\n"
++            f"{FEW_SHOT_EXAMPLES}"
++            f"Now extract from this bug report:\n"
++            f"Bug report: {report}\n\n"
++            f"{FIELD_DESCRIPTION}"
++        )
++
++
++# ── Field-level validation ───────────────────────────────────────────────────
++
++HALLUCINATION_TOKENS = {"unknown", "n/a", "none", "not specified", "not provided", "na", ""}
++
++
++def _is_hallucinated(value: str) -> bool:
++    return str(value).strip().lower() in HALLUCINATION_TOKENS
++
++
++def field_extraction_metrics(record: dict) -> dict:
++    """
++    Computes per-record structural quality metrics for the extracted fields.
++    Does not require ground-truth field annotations — measures validity and
++    completeness only.
++    """
++    fields = ["schema_type", "component", "trigger_action", "error_signature", "severity"]
++    present = {f: f in record and record[f] not in (None, "") for f in fields}
++    hallucinated_fields = {f: _is_hallucinated(record.get(f, "")) for f in fields}
++    schema_type_valid = record.get("schema_type", "") in VALID_SCHEMA_TYPES
++    severity_valid    = record.get("severity", "")    in VALID_SEVERITIES
++
++    completeness = sum(present.values()) / len(fields)
++    hallucination_any = any(hallucinated_fields.values())
++
++    return {
++        "field_completeness":   round(completeness, 4),
++        "schema_type_valid":    schema_type_valid,
++        "severity_field_valid": severity_valid,
++        "hallucinated":         hallucination_any,
++        "hallucinated_fields":  [f for f, h in hallucinated_fields.items() if h],
++    }
++
++
++# ── Single extraction call ───────────────────────────────────────────────────
++
++def extract_bug_info(report: str, model_key: str = "llama_8b", prompt_type: str = "zero_shot") -> tuple[dict, bool]:
++    """
++    Returns (extracted_dict, json_valid).
++    On parse failure returns a skeleton dict with json_valid=False.
++    """
++    time.sleep(1)
++
++    response = client.chat.completions.create(
++        model=MODELS[model_key],
++        messages=[
++            {"role": "system", "content": SYSTEM_PROMPT},
++            {"role": "user",   "content": build_user_prompt(report, prompt_type)},
++        ],
++        temperature=0.0,
++    )
++
++    raw = response.choices[0].message.content.strip()
++    # strip optional markdown fences
++    raw = re.sub(r"^```(?:json)?", "", raw).rstrip("`").strip()
++
++    try:
++        parsed = json.loads(raw)
++        return parsed, True
++    except json.JSONDecodeError:
++        # Try extracting a JSON object substring
++        m = re.search(r"\{.*\}", raw, re.DOTALL)
++        if m:
++            try:
++                parsed = json.loads(m.group())
++                return parsed, True
++            except json.JSONDecodeError:
++                pass
++        return {
++            "schema_type": "", "component": "", "trigger_action": "",
++            "error_signature": "", "severity": "",
++            "_raw_response": raw[:300],
++        }, False
++
++
++# ── Experiment runner ────────────────────────────────────────────────────────
++
++def load_dataset(n_samples: int) -> list[dict]:
++    """Stratified sample — equal representation of each severity label."""
++    rows: list[dict] = []
++    with open(DATA_PATH, newline="", encoding="utf-8") as f:
++        reader = csv.DictReader(f)
++        by_severity: dict[str, list] = {}
++        for row in reader:
++            row = {k.strip(): v.strip() for k, v in row.items()}
++            label = row["Severity Label"].lower()
++            by_severity.setdefault(label, []).append(row)
++
++    per_class = max(1, n_samples // len(by_severity))
++    import random
++    rng = random.Random(42)
++    for label, group in by_severity.items():
++        sampled = rng.sample(group, min(per_class, len(group)))
++        rows.extend(sampled)
++    return rows[:n_samples]
++
++
++def run_experiment(n_samples: int = 150, model_key: str = "llama_8b", prompt_type: str = "zero_shot"):
++    suffix = f"{model_key}_{prompt_type}"
++    out_path = f"evaluation/results_{suffix}.json"
++
++    # Remap qwen key to include size in filename for clarity
++    file_key = "qwen_32b" if model_key == "qwen" else model_key
++    out_path = f"evaluation/results_{file_key}_{prompt_type}.json"
++
++    samples = load_dataset(n_samples)
++    print(f"\nModel: {MODELS[model_key]} | Prompt: {prompt_type} | Samples: {len(samples)}")
++
++    results = []
++    for i, row in enumerate(samples):
++        desc  = row["Short Description"]
++        label = row["Severity Label"].strip().lower()
++        bug_id = row["Bug ID"]
++
++        true_sev = SEVERITY_MAPPING.get(label, "medium")
++
++        print(f"  [{i+1:>3}/{len(samples)}] {desc[:60]}...")
++
++        try:
++            extracted, json_valid = extract_bug_info(desc, model_key=model_key, prompt_type=prompt_type)
++        except Exception as e:
++            print(f"    ERROR: {type(e).__name__}: {e}")
++            continue
++
++        record = {
++            **extracted,
++            "bug_id":          bug_id,
++            "description":     desc,
++            "original_label":  label,
++            "true_severity":   true_sev,
++            "model":           model_key,
++            "model_id":        MODELS[model_key],
++            "prompt_type":     prompt_type,
++            "json_valid":      json_valid,
++            "correct_severity": json_valid and extracted.get("severity") == true_sev,
++        }
++        record.update(field_extraction_metrics(extracted))
++        results.append(record)
++
++    os.makedirs("evaluation", exist_ok=True)
++    with open(out_path, "w") as f:
++        json.dump(results, f, indent=2)
++
++    if results:
++        correct = sum(1 for r in results if r.get("correct_severity"))
++        valid   = sum(1 for r in results if r.get("json_valid"))
++        print(f"\n  === {model_key} | {prompt_type} ===")
++        print(f"  Total:            {len(results)}")
++        print(f"  JSON valid:       {valid}/{len(results)} ({valid/len(results)*100:.1f}%)")
++        print(f"  Severity accuracy:{correct}/{len(results)} ({correct/len(results)*100:.1f}%)")
++        print(f"  Saved → {out_path}")
++    else:
++        print("  No results produced.")
++
++    return results
+-- 
+2.43.0
+
