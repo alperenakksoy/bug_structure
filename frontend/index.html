@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bug Report Structurer</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    max-width: 860px;
+    margin: 50px auto;
+    padding: 0 20px;
+    color: #222;
+    background: #fafafa;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: #666; margin-top: 0; margin-bottom: 24px; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active {
+    color: #111;
+    font-weight: 600;
+    border-bottom: 2px solid #111;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  textarea {
+    width: 100%;
+    height: 90px;
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  button {
+    margin-top: 12px;
+    padding: 9px 18px;
+    font-size: 14px;
+    background: #111;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button:disabled { background: #999; cursor: not-allowed; }
+  button.secondary {
+    background: white;
+    color: #111;
+    border: 1px solid #ccc;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .row:last-child { border-bottom: none; }
+  .label { color: #666; font-size: 13px; }
+  .value { font-weight: 500; text-align: right; max-width: 60%; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .low { background: #e6f4ea; color: #1a7f37; }
+  .medium { background: #fff4e5; color: #b06a00; }
+  .high { background: #fde8e8; color: #c22828; }
+  .critical { background: #2c2c2c; color: #fff; }
+
+  .review-flag {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #7a5c00;
+  }
+  #error { color: #c22828; margin-top: 14px; display: none; font-size: 13px; }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  select, input[type=number] {
+    padding: 7px 10px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+  }
+  th { color: #666; font-weight: 500; font-size: 12px; }
+  td.desc { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .review-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #f0ad00;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-box .num { font-size: 24px; font-weight: 600; }
+  .stat-box .lbl { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .dist-label { width: 90px; font-size: 13px; color: #444; }
+  .bar-bg { flex: 1; background: #eee; border-radius: 4px; height: 14px; overflow: hidden; }
+  .bar-fill { height: 100%; background: #111; }
+  .dist-count { width: 30px; font-size: 12px; color: #666; text-align: right; }
+
+  .empty { color: #999; font-size: 13px; padding: 20px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Bug Report Structurer</h1>
+<p class="sub">Analyze bug reports, browse history, and view aggregate stats.</p>
+
+<div class="tabs">
+  <div class="tab active" data-tab="analyze">Analyze</div>
+  <div class="tab" data-tab="bugs">Bug history</div>
+  <div class="tab" data-tab="stats">Stats</div>
+</div>
+
+<div class="page active" id="page-analyze">
+  <div class="card">
+    <textarea id="description" placeholder="e.g. The login button does nothing when clicked. No error is shown."></textarea>
+    <br>
+    <button id="submitBtn" onclick="analyzeBug()">Analyze</button>
+    <div id="error"></div>
+  </div>
+
+  <div class="card" id="result" style="display:none;">
+    <div class="row"><span class="label">Severity</span><span class="value" id="r-severity"></span></div>
+    <div class="row"><span class="label">Confidence</span><span class="value" id="r-confidence"></span></div>
+    <div class="row"><span class="label">Schema type</span><span class="value" id="r-schema"></span></div>
+    <div class="row"><span class="label">Component</span><span class="value" id="r-component"></span></div>
+    <div class="row"><span class="label">Trigger action</span><span class="value" id="r-trigger"></span></div>
+    <div class="row"><span class="label">Error signature</span><span class="value" id="r-error-sig"></span></div>
+    <div id="review-box"></div>
+  </div>
+</div>
+
+<div class="page" id="page-bugs">
+  <div class="filters">
+    <select id="f-severity">
+      <option value="">All severities</option>
+      <option value="low">low</option>
+      <option value="medium">medium</option>
+      <option value="high">high</option>
+      <option value="critical">critical</option>
+    </select>
+    <select id="f-review">
+      <option value="">All</option>
+      <option value="true">Needs review</option>
+      <option value="false">Auto-approved</option>
+    </select>
+    <select id="f-schema">
+      <option value="">All schema types</option>
+      <option value="frontend">frontend</option>
+      <option value="backend">backend</option>
+      <option value="database">database</option>
+      <option value="performance">performance</option>
+      <option value="other">other</option>
+    </select>
+    <input type="number" id="f-limit" value="50" min="1" style="width:80px;" title="limit">
+    <button class="secondary" onclick="loadBugs()">Refresh</button>
+  </div>
+  <div class="card" style="padding:0; overflow-x:auto;">
+    <table id="bugs-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Severity</th>
+          <th>Conf.</th>
+          <th>Schema</th>
+          <th>Review</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="bugs-body"></tbody>
+    </table>
+    <div class="empty" id="bugs-empty" style="display:none;">No bugs found.</div>
+  </div>
+</div>
+
+<div class="page" id="page-stats">
+  <div class="stat-grid">
+    <div class="stat-box"><div class="num" id="s-total">—</div><div class="lbl">Total bugs</div></div>
+    <div class="stat-box"><div class="num" id="s-review-pct">—</div><div class="lbl">Needs review %</div></div>
+    <div class="stat-box"><div class="num" id="s-avg-conf">—</div><div class="lbl">Avg. confidence</div></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:12px;">Severity distribution</div>
+    <div id="s-severity-dist"></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:12px;">Schema type distribution</div>
+    <div id="s-schema-dist"></div>
+  </div>
+
+  <button class="secondary" onclick="loadStats()">Refresh</button>
+</div>
+
+<script>
+const BASE_URL = "http://localhost:8000";
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("page-" + tab.dataset.tab).classList.add("active");
+    if (tab.dataset.tab === "bugs") loadBugs();
+    if (tab.dataset.tab === "stats") loadStats();
+  });
+});
+
+async function analyzeBug() {
+  const description = document.getElementById("description").value.trim();
+  const btn = document.getElementById("submitBtn");
+  const errorBox = document.getElementById("error");
+  const resultBox = document.getElementById("result");
+
+  errorBox.style.display = "none";
+  resultBox.style.display = "none";
+
+  if (!description) {
+    errorBox.textContent = "Please enter a bug description.";
+    errorBox.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Analyzing...";
+
+  try {
+    const res = await fetch(`${BASE_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description })
+    });
+    if (!res.ok) throw new Error("Server error: " + res.status);
+    const data = await res.json();
+
+    document.getElementById("r-severity").innerHTML =
+      `<span class="badge ${data.severity}">${data.severity}</span>`;
+    document.getElementById("r-confidence").textContent =
+      (data.severity_confidence * 100).toFixed(1) + "%";
+    document.getElementById("r-schema").textContent = data.schema_type || "—";
+    document.getElementById("r-component").textContent = data.component || "—";
+    document.getElementById("r-trigger").textContent = data.trigger_action || "—";
+    document.getElementById("r-error-sig").textContent = data.error_signature || "—";
+
+    document.getElementById("review-box").innerHTML = data.needs_human_review
+      ? `<div class="review-flag">⚠ Low confidence — flagged for human review</div>`
+      : "";
+
+    resultBox.style.display = "block";
+  } catch (err) {
+    errorBox.textContent = "Failed to analyze: " + err.message;
+    errorBox.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Analyze";
+  }
+}
+
+async function loadBugs() {
+  const severity = document.getElementById("f-severity").value;
+  const review = document.getElementById("f-review").value;
+  const schemaType = document.getElementById("f-schema").value;
+  const limit = document.getElementById("f-limit").value || 50;
+
+  const params = new URLSearchParams();
+  if (severity) params.set("severity", severity);
+  if (review) params.set("needs_review", review);
+  if (schemaType) params.set("schema_type", schemaType);
+  params.set("limit", limit);
+
+  const tbody = document.getElementById("bugs-body");
+  const emptyBox = document.getElementById("bugs-empty");
+  tbody.innerHTML = "";
+
+  try {
+    const res = await fetch(`${BASE_URL}/bugs?${params.toString()}`);
+    if (!res.ok) throw new Error("Server error: " + res.status);
+    const bugs = await res.json();
+
+    if (bugs.length === 0) {
+      emptyBox.style.display = "block";
+      return;
+    }
+    emptyBox.style.display = "none";
+
+    bugs.forEach(bug => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${bug.id}</td>
+        <td class="desc" title="${escapeHtml(bug.description)}">${escapeHtml(bug.description)}</td>
+        <td><span class="badge ${bug.severity}">${bug.severity || "—"}</span></td>
+        <td>${bug.severity_confidence != null ? (bug.severity_confidence * 100).toFixed(0) + "%" : "—"}</td>
+        <td>${bug.schema_type || "—"}</td>
+        <td>${bug.needs_human_review ? '<span class="review-dot"></span>' : ""}</td>
+        <td>${bug.created_at || "—"}</td>
+        <td><button class="secondary" style="margin:0; padding:4px 10px; font-size:12px;" onclick="removeBug(${bug.id})">Delete</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    emptyBox.textContent = "Failed to load bugs: " + err.message;
+    emptyBox.style.display = "block";
+  }
+}
+
+async function removeBug(bugId) {
+  if (!confirm(`Delete bug #${bugId}? This cannot be undone.`)) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/bugs/${bugId}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Server error: " + res.status);
+    loadBugs();
+  } catch (err) {
+    alert("Failed to delete: " + err.message);
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str || "";
+  return div.innerHTML;
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`${BASE_URL}/stats`);
+    if (!res.ok) throw new Error("Server error: " + res.status);
+    const data = await res.json();
+
+    document.getElementById("s-total").textContent = data.total_bugs ?? "—";
+    document.getElementById("s-review-pct").textContent =
+      data.needs_review_percentage != null ? data.needs_review_percentage + "%" : "—";
+    document.getElementById("s-avg-conf").textContent =
+      data.average_severity_confidence != null
+        ? (data.average_severity_confidence * 100).toFixed(1) + "%"
+        : "—";
+
+    renderDist("s-severity-dist", data.severity_distribution, data.total_bugs);
+    renderDist("s-schema-dist", data.schema_type_distribution, data.total_bugs);
+  } catch (err) {
+    document.getElementById("s-total").textContent = "err";
+  }
+}
+
+function renderDist(containerId, dist, total) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  if (!dist || Object.keys(dist).length === 0) {
+    container.innerHTML = '<div class="empty">No data yet.</div>';
+    return;
+  }
+  const max = Math.max(...Object.values(dist));
+  for (const [key, count] of Object.entries(dist)) {
+    const pct = max > 0 ? (count / max) * 100 : 0;
+    const row = document.createElement("div");
+    row.className = "dist-row";
+    row.innerHTML = `
+      <div class="dist-label">${key ?? "null"}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <div class="dist-count">${count}</div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+loadStats();
+</script>
+
+</body>
+</html>

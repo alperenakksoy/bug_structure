@@ -58,7 +58,7 @@ def insert_bug(description: str, result: dict) -> int:
     return bug_id
 
 
-def get_bugs(severity: str = None, needs_review: bool = None, limit: int = 100):
+def get_bugs(severity: str = None, needs_review: bool = None, schema_type: str = None, limit: int = 100):
     conn = get_connection()
     query = "SELECT * FROM bugs WHERE 1=1"
     params = []
@@ -69,7 +69,11 @@ def get_bugs(severity: str = None, needs_review: bool = None, limit: int = 100):
 
     if needs_review is not None:
         query += " AND needs_human_review = ?"
-        params.append(int(needs_review))  # SQLite booleanı 0/1 olarak saklar
+        params.append(int(needs_review))
+
+    if schema_type is not None:
+        query += " AND schema_type = ?"
+        params.append(schema_type)
 
     query += " ORDER BY created_at DESC LIMIT ?"
     params.append(limit)
@@ -112,3 +116,11 @@ def get_stats():
         "needs_review_percentage": round(review_count / total * 100, 1) if total > 0 else 0,
         "average_severity_confidence": round(avg_confidence, 4) if avg_confidence else None,
     }
+
+def delete_bug(bug_id: int) -> bool:
+    conn = get_connection()
+    cursor = conn.execute("DELETE FROM bugs WHERE id = ?", (bug_id,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    return deleted
