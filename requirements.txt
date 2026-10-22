@@ -1,0 +1,11 @@
+fastapi
+pydantic
+uvicorn
+watchfiles
+transformers
+torch
+groq
+pandas
+numpy
+python-dotenv
+matplotlib

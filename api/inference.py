@@ -3,7 +3,7 @@ import json
 from transformers import pipeline
 from groq import Groq
 from dotenv import load_dotenv
-from database import insert_bug
+from api.database import insert_bug
 
 load_dotenv()
 
@@ -38,7 +38,7 @@ def predict_severity(description: str) -> dict:
 def extract_fields(description: str) -> dict:
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "user", "content": EXTRACTION_PROMPT.format(description=description)}
             ],
@@ -46,7 +46,7 @@ def extract_fields(description: str) -> dict:
             response_format={"type": "json_object"},
         )
         raw = response.choices[0].message.content
-        print("GROQ RAW OUTPUT:", raw)  # debug için
+        print("GROQ RAW OUTPUT:", raw)
         return json.loads(raw)
     except Exception as e:
         print("EXTRACTION ERROR:", repr(e))  # debug için — hatayı terminalde gör

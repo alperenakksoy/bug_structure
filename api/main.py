@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from inference import analyze_bug
-from database import init_db, get_bugs, get_stats, delete_bug
+from api.inference import analyze_bug
+from api.database import init_db, get_bugs, get_stats, delete_bug
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import os
